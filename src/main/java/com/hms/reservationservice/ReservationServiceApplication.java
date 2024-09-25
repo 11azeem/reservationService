@@ -1,13 +1,13 @@
-package org.example.customerservice;
+package com.hms.reservationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CustomerServiceApplication {
+public class ReservationServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CustomerServiceApplication.class, args);
+        SpringApplication.run(ReservationServiceApplication.class, args);
     }
 
 }
