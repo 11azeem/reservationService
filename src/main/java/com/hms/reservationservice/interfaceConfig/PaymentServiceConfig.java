@@ -11,39 +11,24 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 
 @Configuration
-public class HotelManagementServiceConfig {
-
+public class PaymentServiceConfig {
     private final DiscoveryClient discoveryClient;
-    private static final String HOTEL_MANAGEMENT_SERVICE_HOSTNAME = "hotelManagementService";
+    private static final String PAYMENT_SERVICE_HOSTNAME = "paymentService";
 
     @Autowired
-    public HotelManagementServiceConfig(DiscoveryClient discoveryClient) {
+    public PaymentServiceConfig(DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
     }
 
     @Bean
-    public WebClient hotelManagementServiceClientGetAllRooms(WebClient.Builder webClientBuilder) {
+    public WebClient paymentServiceClientGetPaymentStatus(WebClient.Builder webClientBuilder) {
 
-        ServiceInstance instance = getServiceInstance(HOTEL_MANAGEMENT_SERVICE_HOSTNAME);
+        ServiceInstance instance = getServiceInstance(PAYMENT_SERVICE_HOSTNAME);
         String hostname = instance.getHost();
         int port = instance.getPort();
 
         return webClientBuilder
-                .baseUrl(String.format("http://%s:%d/api/v1/%s", hostname, port, "getAllRooms"))
-                .filter(new LoggingWebClientFilter())
-                .build();
-
-    }
-
-    @Bean
-    public WebClient hotelManagementServiceClientGetRoomAvailability(WebClient.Builder webClientBuilder) {
-
-        ServiceInstance instance = getServiceInstance(HOTEL_MANAGEMENT_SERVICE_HOSTNAME);
-        String hostname = instance.getHost();
-        int port = instance.getPort();
-
-        return webClientBuilder
-                .baseUrl(String.format("http://%s:%d/api/v1/%s", hostname, port, "getRoomAvailability"))
+                .baseUrl(String.format("http://%s:%d/api/v1/%s", hostname, port, "getPaymentStatus"))
                 .filter(new LoggingWebClientFilter())
                 .build();
 
