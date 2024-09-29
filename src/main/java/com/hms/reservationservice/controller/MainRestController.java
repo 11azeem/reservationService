@@ -1,10 +1,12 @@
 package com.hms.reservationservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hms.reservationservice.BookingDetailRepository;
 import com.hms.reservationservice.RequestIdExtractor;
+import com.hms.reservationservice.kafka.KafkaProducer;
 import com.hms.reservationservice.model.BookRoomRequest;
 import com.hms.reservationservice.model.BookingDetail;
 import com.hms.reservationservice.model.BookingStatus;
@@ -61,15 +63,19 @@ public class MainRestController {
     private final RequestIdExtractor requestIdExtractor;
 
     @Autowired
+    private final KafkaProducer kafkaProducer;
+
+    @Autowired
     public MainRestController(WebClient hotelManagementServiceClientGetAllRooms,
                               WebClient hotelManagementServiceClientGetRoomAvailability,
                               WebClient paymentServiceClientGetPaymentStatus,
-                              BookingDetailRepository bookingDetailRepository, RequestIdExtractor requestIdExtractor) {
+                              BookingDetailRepository bookingDetailRepository, RequestIdExtractor requestIdExtractor, KafkaProducer kafkaProducer) {
         this.hotelManagementServiceClientGetAllRooms = hotelManagementServiceClientGetAllRooms;
         this.hotelManagementServiceClientGetRoomAvailability = hotelManagementServiceClientGetRoomAvailability;
         this.paymentServiceClientGetPaymentStatus = paymentServiceClientGetPaymentStatus;
         this.bookingDetailRepository = bookingDetailRepository;
         this.requestIdExtractor = requestIdExtractor;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @GetMapping("/getAvailableRooms")
@@ -163,7 +169,7 @@ public class MainRestController {
     @Retry(name = "hotelManagementService")
     @PostMapping("/getBookingStatus")
     public ResponseEntity<String> getBookingStatus(@RequestBody BookingStatusRequest bookingStatusRequest,
-                                                   HttpServletRequest request, HttpServletResponse servletResponse) {
+                                                   HttpServletRequest request, HttpServletResponse servletResponse) throws JsonProcessingException {
         UUID bookingId = UUID.fromString(bookingStatusRequest.getBookingId());
         List<Cookie> cookieList = getCookieList(request);
         logCookies(cookieList);
@@ -191,7 +197,7 @@ public class MainRestController {
 
             //STEP 3: Sending cookie and update response back to the user.
             servletResponse.addCookie(cookie1);
-            return ResponseEntity.ok().body("Hang on tight! We're processing your booking and will soon provide an update on your stay. " +
+            return ResponseEntity.ok().body("Booking order recieved. We're processing your booking and will soon provide an update on your stay. " +
                     "Thank you for choosing Suite Spott");
         } else {
             BookingStatus bookingStatus = null;
@@ -212,6 +218,7 @@ public class MainRestController {
                         "Any amount deducted will be refunded within 7 business days. Please try again!");
             } else {
                 bookingDetailRepository.updateBookingstatusBy(bookingId, true);
+                //kafkaProducer.pubBookingConfirmedEvent(bookingId);
                 return ResponseEntity.ok().body("Booking successful. Have a wonderful Stay!");
             }
         }
