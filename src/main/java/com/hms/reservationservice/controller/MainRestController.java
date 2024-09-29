@@ -106,11 +106,11 @@ public class MainRestController {
         logRequest(request);
 
         if (!validRoom(request)) {
-            ResponseEntity.badRequest().body("Invalid room, please try again!");
+            return ResponseEntity.badRequest().body("Invalid room, please try again!");
         } else if (!validDates(request)) {
-            ResponseEntity.badRequest().body("Invalid Date, please try again!");
+            return ResponseEntity.badRequest().body("Invalid Date, please try again!");
         } else if (!validCustomer(request)) {
-            ResponseEntity.badRequest().body("Invalid Customer, please try again!");
+            return ResponseEntity.badRequest().body("Invalid Customer, please try again!");
         }
 
         BookingDetail bookingDetail = createBookingDetailsFromRequest(request);
@@ -152,7 +152,7 @@ public class MainRestController {
         return request.getCheckInDate() != null
                 && request.getCheckOutDate() != null
                 && !request.getCheckInDate().isBefore(LocalDate.now())
-                && !request.getCheckInDate().isBefore(request.getCheckOutDate());
+                && request.getCheckInDate().isBefore(request.getCheckOutDate());
     }
 
     private List<Cookie> getCookieList(HttpServletRequest request) {
