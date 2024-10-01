@@ -7,10 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public interface BookingDetailRepository extends JpaRepository<BookingDetail, UUID> {
     @Transactional
     @Modifying
     @Query("update BookingDetail b set b.bookingstatus = ?2 where b.id = ?1")
     void updateBookingstatusBy(UUID id, Boolean bookingstatus);
+
+    long countByBookingstatusTrue();
 }
